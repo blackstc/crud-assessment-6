@@ -88,4 +88,31 @@ router.put('/api/v1/game/:game_id', function(req, res) {
   });
 });
 
+//DELETE
+router.delete('/api/v1/game/:game_id', function(req, res) {
+  var results = [];
+
+  var id = req.params.game_id;
+
+  pg.connect(connectionString, function(err, client, done) {
+    if (err) {
+      done();
+      return res.status(500).send(json({success: false, data: err}));
+    }
+
+    client.query('DELETE FROM n64 WHERE id=($1)', [id]);
+
+    var query = client.query('SELECT * FROM n64');
+
+    query.on('row', function(row) {
+      results.push(row);
+    });
+
+    query.on('end', function() {
+      done();
+      return res.json(results);
+    });
+  });
+});
+
 module.exports = router;
